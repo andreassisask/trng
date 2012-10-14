@@ -1,0 +1,14 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.trng</groupId>
+  <artifactId>trng</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <modules>
+    <module>srnd</module>
+	<module>service</module>
+	<module>store</module>
+	<module>web</module>
+  </modules>
+</project>

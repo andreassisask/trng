@@ -8,3 +8,8 @@
 # Eclipse files
 .classpath
 .project
+.settings
+WebContent
+
+# Maven build
+target

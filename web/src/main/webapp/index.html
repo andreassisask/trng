@@ -1,0 +1,92 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>YouRandom</title>
+        
+		<meta http-equiv="Content-Language" content="English"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <link rel="stylesheet" type="text/css" href="style.css" media="screen"/>
+		<link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.9.0/themes/base/jquery-ui.css">
+        
+        <!-- jQuery -->
+<!--style>
+    .ui-combobox {
+        position: relative;
+        display: inline-block;
+    }
+    .ui-combobox-toggle {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        margin-left: -1px;
+        padding: 0;
+        /* adjust styles for IE 6/7 */
+        *height: 1.7em;
+        *top: 0.1em;
+    }
+    .ui-combobox-input {
+        margin: 0;
+        padding: 0.3em;
+    }
+</style-->
+    
+		<script src="http://code.jquery.com/jquery-1.8.2.js"></script>
+		<script src="http://code.jquery.com/ui/1.9.0/jquery-ui.js"></script>
+		<script src="lib/trng.js"></script>
+	
+    </head>
+    <body>
+        <div id="wrap">
+            <div id="top"></div>
+            <div id="content">
+                <div class="header">
+                    <h1><a href="#">YouRandom</a></h1>
+                    <h2>True random for various applications</h2>
+                </div>
+    
+                <div class="breadcrumbs">
+                <!--
+                <!a href="#">Home</a> &middot; You are here
+                -->
+                </div>
+    
+                <div class="middle">
+                    <h2>Get random</h2>
+                        <div class="controls">
+							<label for="quantity"/>Quantity (b)</label>
+							<input id="quantity"/>
+							<script>
+								$("#quantity").spinner({
+									min: 1,
+									max: 1024
+								});
+							</script>
+                        </div>
+                        <div  class="controls">
+							<button id="raw" onclick="get('raw')">Raw</button>
+							<button id="hex">Hex</button>
+							<button id="ascii">Ascii</button>
+							
+							<script>
+								$("#raw").button();
+								$("#hex").button();
+								$("#ascii").button();
+							</script>
+                        </div>
+                </div>
+                        
+                <div class="right">
+                    <h2>Navigation</h2>
+                    <ul>
+                        <li><a href="http://www.google.com">Google</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div id="bottom"></div>
+        </div>
+
+        <div id="footer">
+            <!--Design by <a href="http://www.minimalistic-design.net">Minimalistic Design</a>-->
+        </div>
+    </body>
+</html>

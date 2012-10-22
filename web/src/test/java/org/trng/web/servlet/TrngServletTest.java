@@ -29,6 +29,7 @@ import org.trng.service.ServiceRequest;
 import org.trng.service.ServiceResponse;
 import org.trng.service.exception.InvalidServiceRequestException;
 import org.trng.service.exception.ServiceFailedException;
+import org.trng.web.service.FileNameFormatter;
 import org.trng.web.service.ServletServiceRequest;
 
 public class TrngServletTest {
@@ -47,6 +48,7 @@ public class TrngServletTest {
 	private RequestProcessorFactory requestProcessorFactory;
 	private Map<String, String[]> parameterMap;
 	private ServletConfig servletConfig;
+	private FileNameFormatter fileNameFormatter;
 
 	@Before
 	public void setUp() throws Exception {
@@ -61,7 +63,8 @@ public class TrngServletTest {
 		serviceRequest = Mockito.mock(ServiceRequest.class);
 		requestProcessorFactory = Mockito.mock(RequestProcessorFactory.class);
 		servletConfig = Mockito.mock(ServletConfig.class);
-
+		fileNameFormatter = Mockito.mock(FileNameFormatter.class);
+		
 		Mockito.doReturn(requestProcessor).when(requestProcessorFactory)
 				.getInstance(Mockito.anyString(), Mockito.any(Properties.class));
 
@@ -73,6 +76,7 @@ public class TrngServletTest {
 
 		Mockito.doReturn(randomFormatter).when(serviceResponse).getRandomFormatter();
 		Mockito.doReturn(parameterMap).when(httpServletRequest).getParameterMap();
+		Mockito.doReturn("fileName").when(fileNameFormatter).getFileName();
 
 	}
 
@@ -102,7 +106,10 @@ public class TrngServletTest {
 		trngServlet.setRequestProcessorFactory(requestProcessorFactory);
 		trngServlet.setRandomStoreClass(randomStoreClass);
 		trngServlet.setProperties(properties);
-
+		
+		parameterMap.put("quantity", new String[]{"5"});
+		parameterMap.put("format", new String[]{"raw"});
+		
 		// Just verify that process request is called, the detailed
 		// test is already done in testProcessRequest
 		InOrder io1 = Mockito.inOrder(requestProcessor, requestProcessorFactory);
@@ -127,16 +134,17 @@ public class TrngServletTest {
 		Mockito.when(randomFormatter.getContentType()).thenReturn("bin");
 		Mockito.when(randomFormatter.isBinary()).thenReturn(true);
 
-		InOrder io = Mockito.inOrder(requestProcessor, serviceResponse, randomFormatter, httpServletResponse);
+		InOrder io = Mockito.inOrder(requestProcessor, serviceResponse, randomFormatter, httpServletResponse, fileNameFormatter);
 
-		trngServlet.processRequest(serviceRequest, httpServletResponse, requestProcessor);
+		trngServlet.processRequest(serviceRequest, httpServletResponse, requestProcessor, fileNameFormatter);
 
 		io.verify(requestProcessor).processRequest(serviceRequest);
 		io.verify(serviceResponse).getRandomFormatter();
 		io.verify(httpServletResponse).setContentType("bin");
 		io.verify(randomFormatter).isBinary();
+		io.verify(fileNameFormatter).getFileName();
+		io.verify(httpServletResponse).setHeader("Content-Disposition", "attachment; filename=\"fileName\"");
 		io.verify(httpServletResponse).setContentLength(8);
-		io.verify(httpServletResponse).setHeader(Mockito.anyString(), Mockito.anyString());
 		io.verifyNoMoreInteractions();
 	}
 

@@ -62,10 +62,10 @@
 								});
 							</script>
                         </div>
-                        <div  class="controls">
+                        <div class="controls">
 							<button id="raw" onclick="get('raw')">Raw</button>
-							<button id="hex">Hex</button>
-							<button id="ascii">Ascii</button>
+							<button id="hex" onclick="get('hex')">Hex</button>
+							<button id="ascii" onclick="get('ascii')">Ascii</button>
 							
 							<script>
 								$("#raw").button();
@@ -73,6 +73,16 @@
 								$("#ascii").button();
 							</script>
                         </div>
+						
+						<div class="controls">
+							<textarea id="result" readonly="true" cols="50" rows="10">
+							</textarea>
+						</div>
+						
+						<script>
+							$("#result").val('kraana');
+						</script>
+						
                 </div>
                         
                 <div class="right">

@@ -23,7 +23,9 @@ import org.trng.service.ServiceResponse;
 import org.trng.service.exception.InvalidServiceRequestException;
 import org.trng.service.exception.ServiceFailedException;
 import org.trng.service.impl.DefaultRequestProcessorFactory;
+import org.trng.web.service.FileNameFormatter;
 import org.trng.web.service.ServletServiceRequest;
+import org.trng.web.service.impl.SimpleFileNameFormatter;
 
 @WebServlet(urlPatterns = "/trng", initParams = {
 		@WebInitParam(name = TrngServlet.RND_STORE_CLASS_PRM, value = TrngServlet.RND_STORE_CLASS_DEFAULT),
@@ -95,7 +97,9 @@ public class TrngServlet extends HttpServlet {
 		try {
 			ServletServiceRequest serviceRequest = new ServletServiceRequest(httpServletRequest, httpServletResponse);
 			RequestProcessor requestProcessor = requestProcessorFactory.getInstance(randomStoreClass, properties);
-			processRequest(serviceRequest, httpServletResponse, requestProcessor);
+			FileNameFormatter fileNameFormatter = new SimpleFileNameFormatter(System.currentTimeMillis(), serviceRequest.getQuantity(), serviceRequest.getFormat());
+
+			processRequest(serviceRequest, httpServletResponse, requestProcessor, fileNameFormatter);
 		} catch (Throwable e) {
 			LOG.error("doGet failed", e);
 			sendErrorQuietly(httpServletResponse, 500, e.getMessage());
@@ -104,15 +108,18 @@ public class TrngServlet extends HttpServlet {
 	}
 
 	protected void processRequest(ServiceRequest serviceRequest, HttpServletResponse httpServletResponse,
-			RequestProcessor processor) throws InvalidServiceRequestException, ServiceFailedException {
+			RequestProcessor processor, FileNameFormatter fileNameFormatter) throws InvalidServiceRequestException, ServiceFailedException {
 
 		ServiceResponse serviceResponse = processor.processRequest(serviceRequest);
 		RandomFormatter formatter = serviceResponse.getRandomFormatter();
 		httpServletResponse.setContentType(formatter.getContentType());
 
 		if (formatter.isBinary()) {
+			httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"" + fileNameFormatter.getFileName() + "\"");
+			
+			// The content length must be set as last, otherwise (at least in Catalina)
+			// any other header is not set as the response is considered 'committed'
 			httpServletResponse.setContentLength(serviceRequest.getQuantity());
-			httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"random.dat\"");
 		}
 	}
 

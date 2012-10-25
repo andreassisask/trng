@@ -7,33 +7,20 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
         <link rel="stylesheet" type="text/css" href="style.css" media="screen"/>
 		<link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.9.0/themes/base/jquery-ui.css">
-        
-        <!-- jQuery -->
-<!--style>
-    .ui-combobox {
-        position: relative;
-        display: inline-block;
-    }
-    .ui-combobox-toggle {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        margin-left: -1px;
-        padding: 0;
-        /* adjust styles for IE 6/7 */
-        *height: 1.7em;
-        *top: 0.1em;
-    }
-    .ui-combobox-input {
-        margin: 0;
-        padding: 0.3em;
-    }
-</style-->
-    
 		<script src="http://code.jquery.com/jquery-1.8.2.js"></script>
 		<script src="http://code.jquery.com/ui/1.9.0/jquery-ui.js"></script>
 		<script src="lib/trng.js"></script>
-	
+		<script>
+			$(function() {
+				$(document).tooltip();
+			});
+		</script>
+		<style>
+			label {
+				display: inline-block;
+				width: 5em;
+			}
+		</style>
     </head>
     <body>
         <div id="wrap">
@@ -51,46 +38,83 @@
                 </div>
     
                 <div class="middle">
-                    <h2>Get random</h2>
-                        <div class="controls">
-							<label for="quantity"/>Quantity (b)</label>
-							<input id="quantity"/>
-							<script>
-								$("#quantity").spinner({
-									min: 1,
-									max: 1024
-								});
-							</script>
-                        </div>
-                        <div class="controls">
-							<button id="raw" onclick="get('raw')">Raw</button>
-							<button id="hex" onclick="get('hex')">Hex</button>
-							<button id="ascii" onclick="get('ascii')">Ascii</button>
+                    <div id="accordion">
+						<h3>Byte / bit sequence</h3>
+						<div>
+							<div class="controls">
+								<label for="quantity"/>Quantity (bytes)</label>
+								<input id="quantity"/>
+								<script>
+									$("#quantity").spinner({
+										min: 1,
+										max: 1024
+									});
+								</script>
+							</div>
+							<div class="controls">
+								<button id="raw" onclick="get('raw')">Raw (download)</button>
+								<button id="hex" onclick="get('hex')">Hex</button>
+								<button id="ascii" onclick="get('ascii')">Ascii</button>
+								<button id="test" onclick="render('http://www.google.com','01111110')">Test</button>
+								
+								<script>
+									$("#raw").button();
+									$("#hex").button();
+									$("#ascii").button();
+									$("#test").button();
+								</script>
+								
+							</div>
+							
+							<div id="divUrl" class="controls">
+								<!--label for="servletUrl">Direct URL</label-->
+								<!--input id="servletUrl" readonly="true"/-->
+								<a id="servletUrl" href="" title="Link for direct access or embedding"></a>
+							</div>
+							
+							<div id="divResult" class="controls">
+								<!--label for="result">Random</label-->
+								<!--input id="result"/-->
+								<!--p id="result"></p-->
+								<textarea id="result" cols="64" class="result" readonly="true" title="Your random"></textarea>
+							</div>
 							
 							<script>
-								$("#raw").button();
-								$("#hex").button();
-								$("#ascii").button();
+								//$("#result").val('kraana');
+								$("#divResult").hide();
+								$("#divUrl").hide();
 							</script>
-                        </div>
-						
-						<div class="controls">
-							<textarea id="result" readonly="true" cols="50" rows="10">
-							</textarea>
 						</div>
-						
-						<script>
-							$("#result").val('kraana');
-						</script>
+						<h3>Section 2</h3>
+						<div>
+							<p>Sed non urna. Phasellus eu ligula. Vestibulum sit amet purus.
+							Vivamus hendrerit, dolor aliquet laoreet, mauris turpis velit,
+							faucibus interdum tellus libero ac justo.</p>
+						</div>
+						<h3>Section 3</h3>
+						<div>
+							<p>Nam enim risus, molestie et, porta ac, aliquam ac, risus.
+							Quisque lobortis.Phasellus pellentesque purus in massa.</p>
+							<ul>
+								<li>List item one</li>
+								<li>List item two</li>
+								<li>List item three</li>
+							</ul>
+						</div>
+					</div>
+					
+					<script>
+						$( "#accordion" ).accordion({heightStyle: 'content'});
+					</script>
 						
                 </div>
                         
-                <div class="right">
+                <!--div class="right">
                     <h2>Navigation</h2>
                     <ul>
                         <li><a href="http://www.google.com">Google</a></li>
                     </ul>
-                </div>
+                </div-->
             </div>
             <div id="bottom"></div>
         </div>

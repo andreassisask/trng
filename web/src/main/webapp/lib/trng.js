@@ -15,17 +15,34 @@ function getQuantity() {
 
 function getUrl(quantity, format) {
 	var params = ['quantity=' + quantity, 'format=' + format].join("&");
-	return "trng?" + params;
+	return $(location).attr('href') + "trng?" + params;
 }
 
 function display(quantity, format) {
+	var servletUrl = getUrl(quantity, format);
 	postStuffToServlet({
-		url: getUrl(quantity, format), 
+		url: servletUrl,
 		success: 
 			function(data){
-				$("#result").val(data);
-			}, 
+				render (servletUrl, data);
+			}
 	});
+}
+
+function render(servletUrl, data) {
+	//$("#servletUrl").val(servletUrl);
+	//$("#servletUrl").attr('size', servletUrl.length);
+	
+	$("#servletUrl").html(servletUrl);
+	$("#servletUrl").attr('href', servletUrl);
+	
+	$("#divUrl").show();
+	
+	//$("#result").val(data);
+	//$("#result").attr('size', data.length);
+	$("#result").html(data);
+	
+	$("#divResult").show();
 }
 
 function download(quantity, format) {

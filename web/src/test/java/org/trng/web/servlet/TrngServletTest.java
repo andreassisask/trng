@@ -23,6 +23,9 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.trng.format.RandomFormatter;
+import org.trng.quota.QuotaManager;
+import org.trng.quota.QuotaManagerFactory;
+import org.trng.service.RequestParameter;
 import org.trng.service.RequestProcessor;
 import org.trng.service.RequestProcessorFactory;
 import org.trng.service.ServiceRequest;
@@ -37,6 +40,7 @@ public class TrngServletTest {
 	public static final String TEXT = "text/plain";
 	public static final int QUANTITY = 8;
 	public static final String QUANTITY_STR = "8";
+	public static final String ASCII = "ascii";
 
 	private TrngServlet trngServlet;
 	private HttpServletRequest httpServletRequest;
@@ -49,6 +53,8 @@ public class TrngServletTest {
 	private Map<String, String[]> parameterMap;
 	private ServletConfig servletConfig;
 	private FileNameFormatter fileNameFormatter;
+	private QuotaManagerFactory quotaManagerFactory;
+	private QuotaManager quotaManager;
 
 	@Before
 	public void setUp() throws Exception {
@@ -64,7 +70,11 @@ public class TrngServletTest {
 		requestProcessorFactory = Mockito.mock(RequestProcessorFactory.class);
 		servletConfig = Mockito.mock(ServletConfig.class);
 		fileNameFormatter = Mockito.mock(FileNameFormatter.class);
-		
+		quotaManagerFactory = Mockito.mock(QuotaManagerFactory.class);
+		quotaManager = Mockito.mock(QuotaManager.class);
+
+		Mockito.doReturn(true).when(quotaManager).checkAvailable(Mockito.anyString(), Mockito.anyInt());
+		Mockito.doReturn(quotaManager).when(quotaManagerFactory).getInstance(Mockito.anyString());
 		Mockito.doReturn(requestProcessor).when(requestProcessorFactory)
 				.getInstance(Mockito.anyString(), Mockito.any(Properties.class));
 
@@ -78,6 +88,21 @@ public class TrngServletTest {
 		Mockito.doReturn(parameterMap).when(httpServletRequest).getParameterMap();
 		Mockito.doReturn("fileName").when(fileNameFormatter).getFileName();
 
+		parameterMap.put(RequestParameter.QUANTITY.getName(), new String[] { QUANTITY_STR });
+		parameterMap.put(RequestParameter.FORMAT.getName(), new String[] { ASCII });
+
+	}
+
+	@Test(expected = ServiceFailedException.class)
+	public void testQuotaExceeded() throws ServiceFailedException {
+		trngServlet.setQuotaManagerClass("whatever");
+		trngServlet.setQuotaManagerFactory(quotaManagerFactory);
+
+		Mockito.doReturn(false).when(quotaManager).checkAvailable(Mockito.anyString(), Mockito.anyInt());
+		Mockito.doReturn(QUANTITY).when(serviceRequest).getQuantity();
+		Mockito.doReturn("google.com").when(httpServletRequest).getRemoteHost();
+
+		trngServlet.checkQuota(httpServletRequest, serviceRequest);
 	}
 
 	@Test
@@ -91,6 +116,11 @@ public class TrngServletTest {
 	public void testDoGetHttpServletRequestHttpServletResponse() throws ServletException, IOException,
 			InvalidServiceRequestException, ServiceFailedException {
 
+		String remoteHost = "trng.org";
+		String randomStoreClass = "a.b.C";
+		Properties properties = new Properties();
+		String quotaManagerClass = "d.e.F";
+
 		// Check that correct request is passed
 		Mockito.doAnswer(new Answer<ServiceResponse>() {
 			public ServiceResponse answer(InvocationOnMock invocation) throws Throwable {
@@ -101,21 +131,24 @@ public class TrngServletTest {
 			}
 		}).when(requestProcessor).processRequest(Mockito.any(ServiceRequest.class));
 
-		String randomStoreClass = "a.b.C";
-		Properties properties = new Properties();
+		Mockito.doReturn(remoteHost).when(httpServletRequest).getRemoteHost();
+
 		trngServlet.setRequestProcessorFactory(requestProcessorFactory);
+		trngServlet.setQuotaManagerFactory(quotaManagerFactory);
 		trngServlet.setRandomStoreClass(randomStoreClass);
+		trngServlet.setQuotaManagerClass(quotaManagerClass);
 		trngServlet.setProperties(properties);
-		
-		parameterMap.put("quantity", new String[]{"5"});
-		parameterMap.put("format", new String[]{"raw"});
-		
+
 		// Just verify that process request is called, the detailed
-		// test is already done in testProcessRequest
-		InOrder io1 = Mockito.inOrder(requestProcessor, requestProcessorFactory);
+		// test is already done in testProcessRequestRaw
+		InOrder io1 = Mockito.inOrder(requestProcessor, requestProcessorFactory, quotaManagerFactory, quotaManager);
 		trngServlet.doGet(httpServletRequest, httpServletResponse);
+		io1.verify(quotaManagerFactory).getInstance(quotaManagerClass);
+		io1.verify(quotaManager).checkAvailable(remoteHost, QUANTITY);
 		io1.verify(requestProcessorFactory).getInstance(randomStoreClass, properties);
 		io1.verify(requestProcessor).processRequest(Mockito.any(ServletServiceRequest.class));
+		io1.verify(quotaManagerFactory).getInstance(quotaManagerClass);
+		io1.verify(quotaManager).removeFromQuota(remoteHost, QUANTITY);
 		io1.verifyNoMoreInteractions();
 
 		// Make sure exception is caught when it happens and sent to client
